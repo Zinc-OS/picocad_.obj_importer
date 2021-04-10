@@ -18,6 +18,12 @@ def convert_obj(input_filepath, output_filepath, scalar = 1):
 	uvScalarY=1
 	vtlist=[]
 	mtl=None
+	if "/" in input_filepath:
+		prefix=input_filepath.split("/")#make sure texture and mtl files are being searched for in the same directory
+		prefix.pop(len(prefix)-1)#remove .obj file from prefix
+		prefix= "/".join(prefix)+"/"#rejoin prefix 
+	else:
+		prefix=""
 	endstring=str("99999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999\n"+
 		"99999999999999999999999999999999999999944999999999999999999999999999999999999999999999999999999999999999999999999999999999999999\n"+
 		"99999999999999999999999999999999999999499999999999999999999999999999999999999999999999999999999999999999999999999999999999999999\n"+
@@ -149,16 +155,16 @@ def convert_obj(input_filepath, output_filepath, scalar = 1):
 			for line in obj:
 				x=str(line)
 				if x.startswith("mtllib"):
-					mtl=x.split(" ")[1]
+					mtl=prefix+x.split(" ")[1]
 			try:
 				if mtl:
 					with open(mtl,"r") as mtl:
 						x=mtl.read().split("\n")
 						for line in x:
 							if line.strip().startswith("map_kd "):
-								png=re.sub("map_kd ","",line.strip())
+								png=prefix+re.sub("map_kd ","",line.strip())
 							if line.strip().startswith("map_Kd "):
-								png=re.sub("map_Kd ","",line.strip())
+								png=prefix+re.sub("map_Kd ","",line.strip())
 						with Image.open(png) as IMAGE:
 							xratio=IMAGE.size[0]/IMAGE.size[1]
 							yratio=IMAGE.size[1]/IMAGE.size[0]
@@ -224,6 +230,7 @@ def convert_obj(input_filepath, output_filepath, scalar = 1):
 							endstring="\n".join(nList)+"\n"
 			except:
 				print("something went wrong when trying to load the texture file. Either It, or the .mtl file does not exist")
+				raise
 			for line in obj:
 				x=str(line)
 				if x.startswith("v "):
